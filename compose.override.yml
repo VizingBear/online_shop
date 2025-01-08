@@ -1,0 +1,37 @@
+name: docs_backend
+
+services:
+  postgres:
+    container_name: docs_backend_postgres
+    environment:
+      POSTGRES_SERVER: "postgres"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgres:16.3
+    expose:
+      - 5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  docs:
+    build:
+      context: .
+    command: fastapi dev app/main.py --host 0.0.0.0 --reload
+    container_name: docs_backend_app
+    environment:
+      DEBUG: True
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: docs_backend_app
+    tty: True
+    ports:
+      - 8000:8000
+    volumes:
+      - ./app:/app
+      - ./alembic.ini:/alembic.ini
+    working_dir: /
+
+volumes:
+  postgres:
+    name: docs_backend_postgres
